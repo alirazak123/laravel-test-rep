@@ -92,7 +92,45 @@ class MenuController extends BaseController
     ]
      */
 
-    public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+     public function getMenuItems() {
+        $menuItems = MenuItem::all();
+        $result = [];
+    
+        // Group menu items by their parent_id for easy access
+        $groupedItems = $menuItems->groupBy('parent_id');
+    
+        // Recursive function to create nested menu structure
+        $createMenu = function ($parentId) use ($groupedItems, &$createMenu) {
+            $items = [];
+    
+            if (isset($groupedItems[$parentId])) {
+                foreach ($groupedItems[$parentId] as $menuItem) {
+                    $item = [
+                        'id' => $menuItem->id,
+                        'name' => $menuItem->name,
+                        'url' => $menuItem->url,
+                        'parent_id' => $menuItem->parent_id,
+                        'created_at' => $menuItem->created_at,
+                        'updated_at' => $menuItem->updated_at,
+                    ];
+    
+                    // Recursively add children
+                    $children = $createMenu($menuItem->id);
+                    if (!empty($children)) {
+                        $item['children'] = $children;
+                    }
+    
+                    $items[] = $item;
+                }
+            }
+    
+            return $items;
+        };
+    
+        // Create menu for root level items
+        $result = $createMenu(null);
+    
+        return $result;
     }
+    
 }

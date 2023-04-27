@@ -36,7 +36,48 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description');
+            $table->timestamps();
+        });
+
+        Schema::create('showrooms', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('shows', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('movie_id');
+            $table->foreign('movie_id')->references('id')->on('movies');
+            $table->unsignedBigInteger('showroom_id');
+            $table->foreign('showroom_id')->references('id')->on('showrooms');
+            $table->dateTime('start_time');
+            $table->decimal('price', 8, 2);
+            $table->timestamps();
+        });
+
+        Schema::create('seats', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('show_id');
+            $table->foreign('show_id')->references('id')->on('shows');
+            $table->string('name');
+            $table->string('type');
+            $table->boolean('available')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('seat_pricing', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('show_id');
+            $table->foreign('show_id')->references('id')->on('shows');
+            $table->string('type');
+            $table->decimal('percentage_premium', 8, 2);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -46,5 +87,10 @@ class CreateCinemaSchema extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('seat_pricing');
+        Schema::dropIfExists('seats');
+        Schema::dropIfExists('shows');
+        Schema::dropIfExists('showrooms');
+        Schema::dropIfExists('movies');
     }
 }
